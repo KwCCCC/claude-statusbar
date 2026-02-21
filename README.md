@@ -3,9 +3,8 @@
 Compact statusline plugin for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Inspired by [OMC HUD](https://github.com/nicobailey/claude-code-hud).
 
 ```
-[Opus 4.6 | Max] ⟫ user@email.com ⟫ @my-session
-genlab-tools git:(main) ↑2 ↓1 | ctx:25% | 5h:41%(3h14m) wk:11%(5d17h)
-1 CLAUDE.md | v2.1.50 | +15 -3 | skill:write-spec
+repo:(genlab-tools) git:(main) ↑2 ↓1 | ctx:25% | 5h:41%(3h14m) wk:11%(5d17h) @my-session
+develop@email.com | Opus 4.6 (Max) v2.1.50 | 1 CLAUDE.md | +15 -3 | skill:write-spec
 agents:3
 ├─ A architect       2m  analyzing architecture patterns...
 ├─ e explore        45s  searching for test files
@@ -14,20 +13,17 @@ agents:3
 
 ## Features
 
-**Line 1 — Identity**
-- Model name + billing plan (Max, Pro, or `API` for API key users)
-- Account email (fetched from Anthropic OAuth profile, cached 1 hour)
-- Session name (set via `/rename`)
-
-**Line 2 — Context & Usage**
-- Project path + git branch with `↑↓` ahead/behind counts
+**Line 1 — Repo & Usage**
+- `repo:(path)` project path (yellow) + `git:(branch)` (cyan) with `↑↓` ahead/behind
 - `ctx:XX%` — context window usage with color thresholds (green < 70%, yellow 70-84%, red >= 85%)
 - `5h:XX%(reset) wk:XX%(reset)` — 5-hour and 7-day rate limit usage with reset countdown
 - `COMPRESS?` warning at 80%+, `CRITICAL` at 85%+
+- Session name with hash-based random color (set via `/rename`)
 
-**Line 3 — Environment**
+**Line 2 — Identity & Environment**
+- Account email (white, fetched from Anthropic OAuth / macOS Keychain, cached 1 hour)
+- Model name + billing plan (dim) + CLI version (dim)
 - CLAUDE.md / rules / MCPs / hooks counts
-- CLI version
 - `+N -N` line diff (green/red)
 - Active skill label (auto-detected from transcript)
 
