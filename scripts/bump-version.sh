@@ -23,8 +23,13 @@ esac
 
 NEW="${MAJOR}.${MINOR}.${PATCH}"
 
-# Update both files
-sed -i '' "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW}\"/" "$PACKAGE_JSON"
-sed -i '' "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW}\"/" "$PLUGIN_JSON"
+# Update both files (cross-platform sed -i)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  sed -i '' "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW}\"/" "$PACKAGE_JSON"
+  sed -i '' "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW}\"/" "$PLUGIN_JSON"
+else
+  sed -i "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW}\"/" "$PACKAGE_JSON"
+  sed -i "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW}\"/" "$PLUGIN_JSON"
+fi
 
 echo "${CURRENT} → ${NEW}"

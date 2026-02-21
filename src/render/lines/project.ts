@@ -50,8 +50,8 @@ export function renderGitPart(ctx: RenderContext): string | null {
 
     if (gitConfig?.showAheadBehind) {
       const abParts: string[] = [];
-      if (ctx.gitStatus.ahead > 0) abParts.push(green(`\u2191${ctx.gitStatus.ahead}`));
       if (ctx.gitStatus.behind > 0) abParts.push(cyan(`\u2193${ctx.gitStatus.behind}`));
+      if (ctx.gitStatus.ahead > 0) abParts.push(green(`\u2191${ctx.gitStatus.ahead}`));
       if (abParts.length > 0) gitPart += ` ${abParts.join(' ')}`;
     }
 
