@@ -10,8 +10,9 @@ import { parseExtraCmdArg, runExtraCmd } from './extra-cmd.js';
 import type { RenderContext } from './types.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, URL } from 'node:url';
 import { realpathSync, readFileSync, existsSync } from 'node:fs';
+import path from 'node:path';
 
 const execFileAsync = promisify(execFile);
 
@@ -77,6 +78,14 @@ export async function main(overrides: Partial<MainDeps> = {}): Promise<void> {
           if (typeof raw?.extraCmd === 'string') extraCmd = raw.extraCmd;
         }
       } catch { /* ignore */ }
+    }
+    // Auto-resolve bundled skill-label.sh if no extraCmd configured
+    if (!extraCmd) {
+      const bundledScript = path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        '..', 'extras', 'skill-label.sh',
+      );
+      if (existsSync(bundledScript)) extraCmd = bundledScript;
     }
     const extraLabel = extraCmd ? await deps.runExtraCmd(extraCmd) : null;
 
