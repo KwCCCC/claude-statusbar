@@ -4,6 +4,7 @@ export declare function green(text: string): string;
 export declare function yellow(text: string): string;
 export declare function red(text: string): string;
 export declare function cyan(text: string): string;
+export declare function branchColor(text: string): string;
 export declare function magenta(text: string): string;
 export declare function dim(text: string): string;
 export declare function getContextColor(percent: number): string;

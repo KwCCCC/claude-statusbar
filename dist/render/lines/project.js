@@ -1,5 +1,5 @@
 import { getModelName, getProviderLabel } from '../../stdin.js';
-import { cyan, dim, green, red, yellow } from '../colors.js';
+import { branchColor, cyan, dim, green, red, yellow } from '../colors.js';
 export function renderProjectLine(ctx) {
     const display = ctx.config?.display;
     if (display?.showModel === false)
@@ -37,7 +37,7 @@ export function renderGitPart(ctx) {
         if ((gitConfig?.showDirty ?? true) && ctx.gitStatus.isDirty) {
             branchParts.push('*');
         }
-        gitPart = ` git:(${cyan(branchParts.join(''))})`;
+        gitPart = ` git:(${branchColor(branchParts.join(''))})`;
         if (gitConfig?.showAheadBehind) {
             const abParts = [];
             if (ctx.gitStatus.behind > 0)
