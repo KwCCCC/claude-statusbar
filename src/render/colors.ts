@@ -6,6 +6,9 @@ const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';
 const MAGENTA = '\x1b[35m';
 const CYAN = '\x1b[36m';
+const BRIGHT_RED = '\x1b[91m';
+const BRIGHT_GREEN = '\x1b[92m';
+const BRIGHT_YELLOW = '\x1b[93m';
 const BRIGHT_BLUE = '\x1b[94m';
 const BRIGHT_MAGENTA = '\x1b[95m';
 const BRIGHT_CYAN = '\x1b[96m';
@@ -43,9 +46,9 @@ export function dim(text: string): string {
 }
 
 export function getContextColor(percent: number): string {
-  if (percent >= 85) return RED;
-  if (percent >= 70) return YELLOW;
-  return GREEN;
+  if (percent >= 85) return BRIGHT_RED;
+  if (percent >= 70) return BRIGHT_YELLOW;
+  return BRIGHT_GREEN;
 }
 
 export function getQuotaColor(percent: number): string {
