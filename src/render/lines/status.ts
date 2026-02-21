@@ -37,7 +37,7 @@ export function renderStatusLine(ctx: RenderContext): string | null {
 
   if (ctx.transcript.sessionName) {
     const sessionColor = getSessionColor(ctx.transcript.sessionName);
-    line += ` ${sessionColor}@${ctx.transcript.sessionName}${RESET}`;
+    line += ` ${sessionColor}#${ctx.transcript.sessionName}${RESET}`;
   }
 
   return line;

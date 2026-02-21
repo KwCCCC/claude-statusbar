@@ -31,7 +31,7 @@ export function renderStatusLine(ctx) {
     let line = parts.join(` ${SEP} `);
     if (ctx.transcript.sessionName) {
         const sessionColor = getSessionColor(ctx.transcript.sessionName);
-        line += ` ${sessionColor}@${ctx.transcript.sessionName}${RESET}`;
+        line += ` ${sessionColor}#${ctx.transcript.sessionName}${RESET}`;
     }
     return line;
 }
