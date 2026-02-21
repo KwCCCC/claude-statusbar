@@ -48,16 +48,19 @@ function renderCompact(ctx) {
 }
 function renderExpanded(ctx) {
     const lines = [];
-    const projectLine = renderProjectLine(ctx);
-    if (projectLine) {
-        lines.push(projectLine);
-    }
     const statusLine = renderStatusLine(ctx);
     if (statusLine) {
         lines.push(statusLine);
     }
+    const projectLine = renderProjectLine(ctx);
     const environmentLine = renderEnvironmentLine(ctx);
-    if (environmentLine) {
+    if (projectLine && environmentLine) {
+        lines.push(`${projectLine} ${dim('|')} ${environmentLine}`);
+    }
+    else if (projectLine) {
+        lines.push(projectLine);
+    }
+    else if (environmentLine) {
         lines.push(environmentLine);
     }
     return lines;

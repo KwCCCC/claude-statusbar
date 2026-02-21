@@ -29,10 +29,6 @@ export function renderEnvironmentLine(ctx: RenderContext): string | null {
     }
   }
 
-  if (ctx.cliVersion) {
-    parts.push(dim(`v${ctx.cliVersion}`));
-  }
-
   if (ctx.gitStatus?.lineDiff) {
     const { additions, deletions } = ctx.gitStatus.lineDiff;
     const diffParts: string[] = [];

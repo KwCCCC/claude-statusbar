@@ -1,7 +1,7 @@
 import type { RenderContext, UsageData } from '../../types.js';
 import { isLimitReached } from '../../types.js';
 import { getContextPercent, getBufferedPercent, getProviderLabel } from '../../stdin.js';
-import { dim, red, yellow, getContextColor, RESET } from '../colors.js';
+import { dim, red, yellow, getContextColor, getSessionColor, RESET } from '../colors.js';
 import { renderGitPart } from './project.js';
 
 const SEP = dim('|');
@@ -33,7 +33,14 @@ export function renderStatusLine(ctx: RenderContext): string | null {
 
   if (parts.length === 0) return null;
 
-  return parts.join(` ${SEP} `);
+  let line = parts.join(` ${SEP} `);
+
+  if (ctx.transcript.sessionName) {
+    const sessionColor = getSessionColor(ctx.transcript.sessionName);
+    line += ` ${sessionColor}@${ctx.transcript.sessionName}${RESET}`;
+  }
+
+  return line;
 }
 
 function renderCompactContext(percent: number): string {

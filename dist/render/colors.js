@@ -50,6 +50,13 @@ export function quotaBar(percent, width = 10) {
     const color = getQuotaColor(safePercent);
     return `${color}${'█'.repeat(filled)}${DIM}${'░'.repeat(empty)}${RESET}`;
 }
+const SESSION_COLORS = [CYAN, MAGENTA, BRIGHT_BLUE, YELLOW, GREEN, BRIGHT_MAGENTA];
+export function getSessionColor(name) {
+    let hash = 0;
+    for (const ch of name)
+        hash = ((hash << 5) - hash + ch.charCodeAt(0)) | 0;
+    return SESSION_COLORS[Math.abs(hash) % SESSION_COLORS.length];
+}
 export function getModelTierColor(model) {
     if (!model)
         return CYAN;

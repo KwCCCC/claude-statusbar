@@ -1,6 +1,6 @@
 import type { RenderContext } from '../../types.js';
 import { getModelName, getProviderLabel } from '../../stdin.js';
-import { brightBlue, cyan, dim, magenta, yellow, red } from '../colors.js';
+import { cyan, dim, green, magenta, red, yellow } from '../colors.js';
 
 export function renderProjectLine(ctx: RenderContext): string | null {
   const display = ctx.config?.display;
@@ -13,15 +13,16 @@ export function renderProjectLine(ctx: RenderContext): string | null {
   const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
   const billingLabel = hasApiKey ? red('API') : planName;
   const planDisplay = providerLabel ?? billingLabel;
-  const innerParts = [model];
-  if (planDisplay) innerParts.push(String(planDisplay));
-  let line = cyan(`[${innerParts.join(' | ')}]`);
+  const header = planDisplay
+    ? `${dim(model)} ${dim('(')}${dim(String(planDisplay))}${dim(')')}`
+    : dim(model);
+  const version = ctx.cliVersion ? ` ${dim(`v${ctx.cliVersion}`)}` : '';
+  const parts: string[] = [];
   if (ctx.accountEmail) {
-    line += ` ${dim('\u27EB')} ${cyan(ctx.accountEmail)}`;
+    parts.push(ctx.accountEmail);
   }
-  if (ctx.transcript.sessionName) {
-    line += ` ${dim('\u27EB')} ${brightBlue('@' + ctx.transcript.sessionName)}`;
-  }
+  parts.push(`${header}${version}`);
+  const line = parts.join(` ${dim('|')} `);
 
   return line;
 }
@@ -45,13 +46,13 @@ export function renderGitPart(ctx: RenderContext): string | null {
       branchParts.push('*');
     }
 
-    gitPart = ` ${magenta('git:(')}${cyan(branchParts.join(''))}${magenta(')')}`;
+    gitPart = ` git:(${cyan(branchParts.join(''))})`;
 
     if (gitConfig?.showAheadBehind) {
       const abParts: string[] = [];
-      if (ctx.gitStatus.ahead > 0) abParts.push(`\u2191${ctx.gitStatus.ahead}`);
-      if (ctx.gitStatus.behind > 0) abParts.push(`\u2193${ctx.gitStatus.behind}`);
-      if (abParts.length > 0) gitPart += ` ${cyan(abParts.join(' '))}`;
+      if (ctx.gitStatus.ahead > 0) abParts.push(green(`\u2191${ctx.gitStatus.ahead}`));
+      if (ctx.gitStatus.behind > 0) abParts.push(cyan(`\u2193${ctx.gitStatus.behind}`));
+      if (abParts.length > 0) gitPart += ` ${abParts.join(' ')}`;
     }
 
     if (gitConfig?.showFileStats && ctx.gitStatus.fileStats) {
@@ -65,5 +66,5 @@ export function renderGitPart(ctx: RenderContext): string | null {
     }
   }
 
-  return `${yellow(projectPath)}${gitPart}`;
+  return `repo:(${yellow(projectPath)})${gitPart}`;
 }

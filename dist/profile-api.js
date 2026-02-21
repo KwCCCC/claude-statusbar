@@ -2,8 +2,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as https from 'https';
+import { execFileSync } from 'child_process';
 import { createDebug } from './debug.js';
 const debug = createDebug('profile');
+const KEYCHAIN_TIMEOUT_MS = 5000;
 // Profile changes rarely — cache for 1 hour
 const CACHE_TTL_MS = 3_600_000;
 function getCachePath() {
@@ -35,6 +37,28 @@ function writeCache(data, now) {
     catch { /* ignore */ }
 }
 function getAccessToken() {
+    const now = Date.now();
+    // Try macOS Keychain first (Claude Code 2.x)
+    if (process.platform === 'darwin') {
+        try {
+            const keychainData = execFileSync('/usr/bin/security', ['find-generic-password', '-s', 'Claude Code-credentials', '-w'], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: KEYCHAIN_TIMEOUT_MS }).trim();
+            if (keychainData) {
+                const data = JSON.parse(keychainData);
+                const token = data?.claudeAiOauth?.accessToken;
+                if (token) {
+                    const expiresAt = data?.claudeAiOauth?.expiresAt;
+                    if (expiresAt == null || expiresAt > now) {
+                        debug('Using access token from macOS Keychain');
+                        return token;
+                    }
+                }
+            }
+        }
+        catch {
+            debug('Failed to read from macOS Keychain');
+        }
+    }
+    // Fall back to file-based credentials
     try {
         const credPath = path.join(os.homedir(), '.claude', '.credentials.json');
         if (!fs.existsSync(credPath))
@@ -45,7 +69,7 @@ function getAccessToken() {
         if (!token)
             return null;
         const expiresAt = data?.claudeAiOauth?.expiresAt;
-        if (expiresAt != null && expiresAt <= Date.now())
+        if (expiresAt != null && expiresAt <= now)
             return null;
         return token;
     }

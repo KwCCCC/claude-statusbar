@@ -1,5 +1,5 @@
 import { getModelName, getProviderLabel } from '../../stdin.js';
-import { brightBlue, cyan, dim, magenta, yellow, red } from '../colors.js';
+import { cyan, dim, green, red, yellow } from '../colors.js';
 export function renderProjectLine(ctx) {
     const display = ctx.config?.display;
     if (display?.showModel === false)
@@ -10,16 +10,16 @@ export function renderProjectLine(ctx) {
     const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
     const billingLabel = hasApiKey ? red('API') : planName;
     const planDisplay = providerLabel ?? billingLabel;
-    const innerParts = [model];
-    if (planDisplay)
-        innerParts.push(String(planDisplay));
-    let line = cyan(`[${innerParts.join(' | ')}]`);
+    const header = planDisplay
+        ? `${dim(model)} ${dim('(')}${dim(String(planDisplay))}${dim(')')}`
+        : dim(model);
+    const version = ctx.cliVersion ? ` ${dim(`v${ctx.cliVersion}`)}` : '';
+    const parts = [];
     if (ctx.accountEmail) {
-        line += ` ${dim('\u27EB')} ${cyan(ctx.accountEmail)}`;
+        parts.push(ctx.accountEmail);
     }
-    if (ctx.transcript.sessionName) {
-        line += ` ${dim('\u27EB')} ${brightBlue('@' + ctx.transcript.sessionName)}`;
-    }
+    parts.push(`${header}${version}`);
+    const line = parts.join(` ${dim('|')} `);
     return line;
 }
 /** Render path + git info as a standalone string (used by status line) */
@@ -37,15 +37,15 @@ export function renderGitPart(ctx) {
         if ((gitConfig?.showDirty ?? true) && ctx.gitStatus.isDirty) {
             branchParts.push('*');
         }
-        gitPart = ` ${magenta('git:(')}${cyan(branchParts.join(''))}${magenta(')')}`;
+        gitPart = ` git:(${cyan(branchParts.join(''))})`;
         if (gitConfig?.showAheadBehind) {
             const abParts = [];
             if (ctx.gitStatus.ahead > 0)
-                abParts.push(`\u2191${ctx.gitStatus.ahead}`);
+                abParts.push(green(`\u2191${ctx.gitStatus.ahead}`));
             if (ctx.gitStatus.behind > 0)
-                abParts.push(`\u2193${ctx.gitStatus.behind}`);
+                abParts.push(cyan(`\u2193${ctx.gitStatus.behind}`));
             if (abParts.length > 0)
-                gitPart += ` ${cyan(abParts.join(' '))}`;
+                gitPart += ` ${abParts.join(' ')}`;
         }
         if (gitConfig?.showFileStats && ctx.gitStatus.fileStats) {
             const { modified, added, deleted, untracked } = ctx.gitStatus.fileStats;
@@ -62,6 +62,6 @@ export function renderGitPart(ctx) {
                 gitPart += ` ${statParts.join(' ')}`;
         }
     }
-    return `${yellow(projectPath)}${gitPart}`;
+    return `repo:(${yellow(projectPath)})${gitPart}`;
 }
 //# sourceMappingURL=project.js.map

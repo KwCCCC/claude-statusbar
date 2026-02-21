@@ -9,6 +9,7 @@ export declare function dim(text: string): string;
 export declare function getContextColor(percent: number): string;
 export declare function getQuotaColor(percent: number): string;
 export declare function quotaBar(percent: number, width?: number): string;
+export declare function getSessionColor(name: string): string;
 export declare function getModelTierColor(model?: string): string;
 export declare function getDurationColor(ms: number): string;
 export declare function getUsageColor(percent: number): string;
