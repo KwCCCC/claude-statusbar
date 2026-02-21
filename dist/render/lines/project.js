@@ -1,5 +1,5 @@
 import { getModelName, getProviderLabel } from '../../stdin.js';
-import { branchColor, cyan, dim, green, red, yellow } from '../colors.js';
+import { branchColor, cyan, dim, green, red, repoColor } from '../colors.js';
 export function renderProjectLine(ctx) {
     const display = ctx.config?.display;
     if (display?.showModel === false)
@@ -62,6 +62,6 @@ export function renderGitPart(ctx) {
                 gitPart += ` ${statParts.join(' ')}`;
         }
     }
-    return `repo:(${yellow(projectPath)})${gitPart}`;
+    return `repo:(${repoColor(projectPath)})${gitPart}`;
 }
 //# sourceMappingURL=project.js.map
