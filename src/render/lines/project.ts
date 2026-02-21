@@ -1,6 +1,6 @@
 import type { RenderContext } from '../../types.js';
 import { getModelName, getProviderLabel } from '../../stdin.js';
-import { cyan, dim, green, magenta, red, yellow } from '../colors.js';
+import { brightCyan, cyan, dim, green, red, yellow } from '../colors.js';
 
 export function renderProjectLine(ctx: RenderContext): string | null {
   const display = ctx.config?.display;
@@ -46,7 +46,7 @@ export function renderGitPart(ctx: RenderContext): string | null {
       branchParts.push('*');
     }
 
-    gitPart = ` git:(${cyan(branchParts.join(''))})`;
+    gitPart = ` git:(${brightCyan(branchParts.join(''))})`;
 
     if (gitConfig?.showAheadBehind) {
       const abParts: string[] = [];
