@@ -8,6 +8,7 @@ set -euo pipefail
 TYPE="${1:-patch}"
 PACKAGE_JSON="package.json"
 PLUGIN_JSON=".claude-plugin/plugin.json"
+CONSTANTS_TS="src/constants.ts"
 
 # Get current version from package.json
 CURRENT=$(grep -o '"version": "[^"]*"' "$PACKAGE_JSON" | head -1 | cut -d'"' -f4)
@@ -23,13 +24,15 @@ esac
 
 NEW="${MAJOR}.${MINOR}.${PATCH}"
 
-# Update both files (cross-platform sed -i)
+# Update all version files (cross-platform sed -i)
 if [[ "$OSTYPE" == "darwin"* ]]; then
   sed -i '' "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW}\"/" "$PACKAGE_JSON"
   sed -i '' "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW}\"/" "$PLUGIN_JSON"
+  sed -i '' "s/VERSION = '${CURRENT}'/VERSION = '${NEW}'/" "$CONSTANTS_TS"
 else
   sed -i "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW}\"/" "$PACKAGE_JSON"
   sed -i "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW}\"/" "$PLUGIN_JSON"
+  sed -i "s/VERSION = '${CURRENT}'/VERSION = '${NEW}'/" "$CONSTANTS_TS"
 fi
 
 echo "${CURRENT} → ${NEW}"

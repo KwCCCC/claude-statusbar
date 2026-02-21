@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { VERSION } from './constants.js';
 
 const execFileAsync = promisify(execFile);
 const FETCH_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
@@ -14,6 +15,7 @@ function getFetchStampPath(): string {
 interface FetchStamp {
   timestamp: number;
   session?: string;
+  version?: string;
 }
 
 async function periodicFetch(cwd: string, sessionId?: string): Promise<void> {
@@ -23,15 +25,18 @@ async function periodicFetch(cwd: string, sessionId?: string): Promise<void> {
   try {
     if (fs.existsSync(stampPath)) {
       const raw: FetchStamp = JSON.parse(fs.readFileSync(stampPath, 'utf8'));
-      const sameSession = sessionId && raw.session === sessionId;
-      if (sameSession && now - raw.timestamp < FETCH_COOLDOWN_MS) return;
+      if (raw.version !== VERSION) { /* version changed, proceed with fetch */ }
+      else {
+        const sameSession = sessionId && raw.session === sessionId;
+        if (sameSession && now - raw.timestamp < FETCH_COOLDOWN_MS) return;
+      }
     }
   } catch { /* proceed with fetch */ }
 
   try {
     const dir = path.dirname(stampPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    const stamp: FetchStamp = { timestamp: now, session: sessionId };
+    const stamp: FetchStamp = { timestamp: now, session: sessionId, version: VERSION };
     fs.writeFileSync(stampPath, JSON.stringify(stamp), 'utf8');
     await execFileAsync('git', ['fetch', '--quiet'], { cwd, timeout: 5000, encoding: 'utf8' });
   } catch { /* ignore fetch failures */ }

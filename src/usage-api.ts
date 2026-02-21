@@ -5,6 +5,7 @@ import * as https from 'https';
 import { execFileSync } from 'child_process';
 import type { UsageData } from './types.js';
 import { createDebug } from './debug.js';
+import { VERSION } from './constants.js';
 
 export type { UsageData } from './types.js';
 
@@ -46,6 +47,7 @@ const KEYCHAIN_BACKOFF_MS = 60_000; // Backoff on keychain failures to avoid re-
 interface CacheFile {
   data: UsageData;
   timestamp: number;
+  version?: string;
 }
 
 function getCachePath(homeDir: string): string {
@@ -59,6 +61,9 @@ function readCache(homeDir: string, now: number): UsageData | null {
 
     const content = fs.readFileSync(cachePath, 'utf8');
     const cache: CacheFile = JSON.parse(content);
+
+    // Invalidate cache if plugin version changed
+    if (cache.version !== VERSION) return null;
 
     // Check TTL - use shorter TTL for failure results
     const ttl = cache.data.apiUnavailable ? CACHE_FAILURE_TTL_MS : CACHE_TTL_MS;
@@ -89,7 +94,7 @@ function writeCache(homeDir: string, data: UsageData, timestamp: number): void {
       fs.mkdirSync(cacheDir, { recursive: true });
     }
 
-    const cache: CacheFile = { data, timestamp };
+    const cache: CacheFile = { data, timestamp, version: VERSION };
     fs.writeFileSync(cachePath, JSON.stringify(cache), 'utf8');
   } catch {
     // Ignore cache write failures

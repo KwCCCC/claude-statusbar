@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as https from 'https';
 import { execFileSync } from 'child_process';
 import { createDebug } from './debug.js';
+import { VERSION } from './constants.js';
 const debug = createDebug('usage');
 // File-based cache (HUD runs as new process each render, so in-memory cache won't persist)
 const CACHE_TTL_MS = 60_000; // 60 seconds
@@ -20,6 +21,9 @@ function readCache(homeDir, now) {
             return null;
         const content = fs.readFileSync(cachePath, 'utf8');
         const cache = JSON.parse(content);
+        // Invalidate cache if plugin version changed
+        if (cache.version !== VERSION)
+            return null;
         // Check TTL - use shorter TTL for failure results
         const ttl = cache.data.apiUnavailable ? CACHE_FAILURE_TTL_MS : CACHE_TTL_MS;
         if (now - cache.timestamp >= ttl)
@@ -46,7 +50,7 @@ function writeCache(homeDir, data, timestamp) {
         if (!fs.existsSync(cacheDir)) {
             fs.mkdirSync(cacheDir, { recursive: true });
         }
-        const cache = { data, timestamp };
+        const cache = { data, timestamp, version: VERSION };
         fs.writeFileSync(cachePath, JSON.stringify(cache), 'utf8');
     }
     catch {

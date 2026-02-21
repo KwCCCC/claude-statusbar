@@ -1,1 +1,1 @@
-{"version":3,"file":"profile-api.d.ts","sourceRoot":"","sources":["../src/profile-api.ts"],"names":[],"mappings":"AAaA,MAAM,WAAW,WAAW;IAC1B,KAAK,EAAE,MAAM,GAAG,IAAI,CAAC;IACrB,WAAW,EAAE,MAAM,GAAG,IAAI,CAAC;CAC5B;AA8HD,wBAAsB,UAAU,IAAI,OAAO,CAAC,WAAW,GAAG,IAAI,CAAC,CAa9D"}
+{"version":3,"file":"profile-api.d.ts","sourceRoot":"","sources":["../src/profile-api.ts"],"names":[],"mappings":"AAcA,MAAM,WAAW,WAAW;IAC1B,KAAK,EAAE,MAAM,GAAG,IAAI,CAAC;IACrB,WAAW,EAAE,MAAM,GAAG,IAAI,CAAC;CAC5B;AAgID,wBAAsB,UAAU,IAAI,OAAO,CAAC,WAAW,GAAG,IAAI,CAAC,CAa9D"}

@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as https from 'https';
 import { execFileSync } from 'child_process';
 import { createDebug } from './debug.js';
+import { VERSION } from './constants.js';
 
 const debug = createDebug('profile');
 const KEYCHAIN_TIMEOUT_MS = 5000;
@@ -30,6 +31,7 @@ interface ProfileApiResponse {
 interface CacheFile {
   data: ProfileData;
   timestamp: number;
+  version?: string;
 }
 
 function getCachePath(): string {
@@ -42,6 +44,7 @@ function readCache(now: number): ProfileData | null {
     if (!fs.existsSync(cachePath)) return null;
     const content = fs.readFileSync(cachePath, 'utf8');
     const cache: CacheFile = JSON.parse(content);
+    if (cache.version !== VERSION) return null;
     if (now - cache.timestamp >= CACHE_TTL_MS) return null;
     return cache.data;
   } catch {
@@ -54,7 +57,7 @@ function writeCache(data: ProfileData, now: number): void {
     const cachePath = getCachePath();
     const dir = path.dirname(cachePath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(cachePath, JSON.stringify({ data, timestamp: now }), 'utf8');
+    fs.writeFileSync(cachePath, JSON.stringify({ data, timestamp: now, version: VERSION }), 'utf8');
   } catch { /* ignore */ }
 }
 
