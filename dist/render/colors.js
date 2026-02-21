@@ -1,7 +1,6 @@
 export const RESET = '\x1b[0m';
 const DIM = '\x1b[2m';
 const RED = '\x1b[31m';
-const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';
 const MAGENTA = '\x1b[35m';
 const CYAN = '\x1b[36m';
@@ -15,7 +14,7 @@ export function brightBlue(text) {
     return `${BRIGHT_BLUE}${text}${RESET}`;
 }
 export function green(text) {
-    return `${GREEN}${text}${RESET}`;
+    return `${MID_GREEN}${text}${RESET}`;
 }
 export function yellow(text) {
     return `${YELLOW}${text}${RESET}`;
@@ -57,7 +56,7 @@ export function quotaBar(percent, width = 10) {
     const color = getQuotaColor(safePercent);
     return `${color}${'█'.repeat(filled)}${DIM}${'░'.repeat(empty)}${RESET}`;
 }
-const SESSION_COLORS = [CYAN, MAGENTA, BRIGHT_BLUE, YELLOW, GREEN, BRIGHT_MAGENTA];
+const SESSION_COLORS = [CYAN, MAGENTA, BRIGHT_BLUE, YELLOW, MID_GREEN, BRIGHT_MAGENTA];
 export function getSessionColor(name) {
     let hash = 0;
     for (const ch of name)
@@ -73,7 +72,7 @@ export function getModelTierColor(model) {
     if (m.includes('sonnet'))
         return YELLOW;
     if (m.includes('haiku'))
-        return GREEN;
+        return MID_GREEN;
     return CYAN;
 }
 export function getDurationColor(ms) {
@@ -81,14 +80,14 @@ export function getDurationColor(ms) {
         return RED; // >=5m
     if (ms >= 120000)
         return YELLOW; // >=2m
-    return GREEN;
+    return MID_GREEN;
 }
 export function getUsageColor(percent) {
     if (percent >= 90)
         return RED;
     if (percent >= 70)
         return YELLOW;
-    return GREEN;
+    return MID_GREEN;
 }
 export function coloredBar(percent, width = 10) {
     const safeWidth = Number.isFinite(width) ? Math.max(0, Math.round(width)) : 0;
