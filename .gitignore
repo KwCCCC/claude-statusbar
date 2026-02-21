@@ -57,3 +57,4 @@ temp/
 # Lock files (keep package-lock.json for npm)
 yarn.lock
 bun.lock
+.npmrc

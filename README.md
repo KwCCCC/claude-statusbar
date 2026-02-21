@@ -45,7 +45,7 @@ agents:3
 In Claude Code:
 
 ```
-/install-plugin claude-statusbar
+/install-plugin @kwcccc/claude-statusbar
 ```
 
 ### 2. Activate the statusline

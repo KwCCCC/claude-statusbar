@@ -36,7 +36,7 @@ fi
 echo "[claude-statusbar] Done!"
 echo ""
 echo "  Installation:"
-echo "    1. /install-plugin claude-statusbar"
+echo "    1. /install-plugin @kwcccc/claude-statusbar"
 echo "    2. /claude-statusbar:setup"
 echo ""
 echo "  Features:"
