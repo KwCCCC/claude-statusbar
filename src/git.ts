@@ -11,21 +11,28 @@ function getFetchStampPath(): string {
   return path.join(os.homedir(), '.claude', 'plugins', 'claude-statusbar', '.git-fetch-stamp');
 }
 
-async function periodicFetch(cwd: string): Promise<void> {
+interface FetchStamp {
+  timestamp: number;
+  session?: string;
+}
+
+async function periodicFetch(cwd: string, sessionId?: string): Promise<void> {
   const stampPath = getFetchStampPath();
   const now = Date.now();
 
   try {
     if (fs.existsSync(stampPath)) {
-      const stamp = parseInt(fs.readFileSync(stampPath, 'utf8'), 10);
-      if (now - stamp < FETCH_COOLDOWN_MS) return;
+      const raw: FetchStamp = JSON.parse(fs.readFileSync(stampPath, 'utf8'));
+      const sameSession = sessionId && raw.session === sessionId;
+      if (sameSession && now - raw.timestamp < FETCH_COOLDOWN_MS) return;
     }
   } catch { /* proceed with fetch */ }
 
   try {
     const dir = path.dirname(stampPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(stampPath, String(now), 'utf8');
+    const stamp: FetchStamp = { timestamp: now, session: sessionId };
+    fs.writeFileSync(stampPath, JSON.stringify(stamp), 'utf8');
     await execFileAsync('git', ['fetch', '--quiet'], { cwd, timeout: 5000, encoding: 'utf8' });
   } catch { /* ignore fetch failures */ }
 }
@@ -66,7 +73,7 @@ export async function getGitBranch(cwd?: string): Promise<string | null> {
   }
 }
 
-export async function getGitStatus(cwd?: string): Promise<GitStatus | null> {
+export async function getGitStatus(cwd?: string, sessionId?: string): Promise<GitStatus | null> {
   if (!cwd) return null;
 
   try {
@@ -97,8 +104,8 @@ export async function getGitStatus(cwd?: string): Promise<GitStatus | null> {
       // Ignore errors, assume clean
     }
 
-    // Periodic fetch to keep tracking refs up to date (every 5 min)
-    await periodicFetch(cwd);
+    // Fetch on session start, then every 5 min
+    await periodicFetch(cwd, sessionId);
 
     // Get ahead/behind counts
     let ahead = 0;

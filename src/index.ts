@@ -61,7 +61,7 @@ export async function main(overrides: Partial<MainDeps> = {}): Promise<void> {
 
     const config = await deps.loadConfig();
     const gitStatus = config.gitStatus.enabled
-      ? await deps.getGitStatus(stdin.cwd)
+      ? await deps.getGitStatus(stdin.cwd, stdin.transcript_path)
       : null;
 
     // Only fetch usage if enabled in config (replaces env var requirement)

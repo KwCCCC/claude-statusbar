@@ -17,5 +17,5 @@ export interface GitStatus {
     lineDiff?: LineDiffStats;
 }
 export declare function getGitBranch(cwd?: string): Promise<string | null>;
-export declare function getGitStatus(cwd?: string): Promise<GitStatus | null>;
+export declare function getGitStatus(cwd?: string, sessionId?: string): Promise<GitStatus | null>;
 //# sourceMappingURL=git.d.ts.map
