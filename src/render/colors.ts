@@ -9,7 +9,6 @@ const CYAN = '\x1b[36m';
 const MID_GREEN = '\x1b[38;5;34m';
 const MID_YELLOW = '\x1b[38;5;179m';
 const MID_RED = '\x1b[38;5;167m';
-const REPO_COLOR = '\x1b[38;5;224m';
 const BRANCH_COLOR = '\x1b[38;5;159m';
 const BRIGHT_BLUE = '\x1b[94m';
 const BRIGHT_MAGENTA = '\x1b[95m';
@@ -37,9 +36,6 @@ export function branchColor(text: string): string {
   return `${BRANCH_COLOR}${text}${RESET}`;
 }
 
-export function repoColor(text: string): string {
-  return `${REPO_COLOR}${text}${RESET}`;
-}
 
 export function magenta(text: string): string {
   return `${MAGENTA}${text}${RESET}`;

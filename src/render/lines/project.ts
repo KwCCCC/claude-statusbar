@@ -1,6 +1,6 @@
 import type { RenderContext } from '../../types.js';
 import { getModelName, getProviderLabel } from '../../stdin.js';
-import { branchColor, cyan, dim, green, red, repoColor, yellow } from '../colors.js';
+import { branchColor, cyan, dim, green, red, yellow } from '../colors.js';
 
 export function renderProjectLine(ctx: RenderContext): string | null {
   const display = ctx.config?.display;
@@ -66,5 +66,5 @@ export function renderGitPart(ctx: RenderContext): string | null {
     }
   }
 
-  return `repo:(${repoColor(projectPath)})${gitPart}`;
+  return `repo:(${yellow(projectPath)})${gitPart}`;
 }
