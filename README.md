@@ -32,7 +32,7 @@ agents:3
 - Active skill label (auto-detected from transcript)
 
 **Agent Tree**
-- OMC-style multiline tree with box-drawing characters (`├─` / `└─`)
+- OMC-style multiline tree with box-drawing characters
 - Model tier colors: opus = magenta, sonnet = yellow, haiku = green
 - 1-2 char agent code with uppercase = opus tier
 - Right-aligned duration with color thresholds (green < 2m, yellow 2-5m, red >= 5m)
@@ -40,21 +40,23 @@ agents:3
 
 ## Installation
 
-### 1. Install the plugin
-
-In Claude Code:
+### 1. Add the marketplace
 
 ```
-/install-plugin @kwcccc/claude-statusbar
+/plugin marketplace add KwCCCC/claude-statusbar
 ```
 
-### 2. Activate the statusline
+### 2. Install the plugin
+
+```
+/plugin install claude-statusbar@claude-statusbar
+```
+
+### 3. Activate the statusline
 
 ```
 /claude-statusbar:setup
 ```
-
-That's it. No additional scripts or config needed.
 
 ## Configuration
 
@@ -145,8 +147,8 @@ Same thresholds as context window.
 
 ## Requirements
 
-- Claude Code with statusline plugin support
-- Node.js >= 18.0.0
+- Claude Code with plugin support
+- Node.js >= 18.0.0 or Bun
 
 ## License
 

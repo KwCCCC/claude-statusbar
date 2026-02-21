@@ -1,33 +1,20 @@
 {
-  "name": "@kwcccc/claude-statusbar",
-  "version": "1.0.8",
-  "description": "Compact statusline for Claude Code — OMC-style ctx/usage, agent tree, profile, skill label",
+  "name": "claude-statusbar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Compact statusline plugin for Claude Code",
   "type": "module",
   "main": "dist/index.js",
-  "files": [
-    "dist",
-    "src",
-    "extras"
-  ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
-    "test:stdin": "echo '{\"model\":{\"display_name\":\"Opus\"},\"context_window\":{\"current_usage\":{\"input_tokens\":45000},\"context_window_size\":200000},\"transcript_path\":\"/tmp/test.jsonl\"}' | node dist/index.js"
+    "dev": "tsc --watch"
   },
-  "keywords": [
-    "claude-code",
-    "statusline",
-    "claude-statusbar"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/KwCCCC/claude-statusbar"
   },
   "author": "KwCCCC",
   "license": "MIT",
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "devDependencies": {
     "@types/node": "^25.2.3",
     "typescript": "^5.0.0"

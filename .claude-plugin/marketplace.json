@@ -1,0 +1,20 @@
+{
+  "name": "claude-statusbar",
+  "owner": {
+    "name": "KwCCCC",
+    "url": "https://github.com/KwCCCC"
+  },
+  "metadata": {
+    "description": "Compact statusline HUD for Claude Code — OMC-style ctx/usage, agent tree, profile, skill label",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "claude-statusbar",
+      "source": "./",
+      "description": "OMC-style compact ctx/usage, multiline agent tree with model tier colors, account email, session name, skill label. Zero config required.",
+      "category": "monitoring",
+      "tags": ["statusline", "hud", "monitoring", "context", "agents", "usage"]
+    }
+  ]
+}
