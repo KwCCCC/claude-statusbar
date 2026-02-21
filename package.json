@@ -1,6 +1,6 @@
 {
   "name": "@kwcccc/claude-statusbar",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Compact statusline for Claude Code — OMC-style ctx/usage, agent tree, profile, skill label",
   "type": "module",
   "main": "dist/index.js",
@@ -19,6 +19,10 @@
     "statusline",
     "claude-statusbar"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KwCCCC/claude-statusbar"
+  },
   "author": "KwCCCC",
   "license": "MIT",
   "engines": {
