@@ -1,0 +1,36 @@
+export type LineLayoutType = 'compact' | 'expanded';
+export type AutocompactBufferMode = 'enabled' | 'disabled';
+export type ContextValueMode = 'percent' | 'tokens';
+export interface HudConfig {
+    lineLayout: LineLayoutType;
+    showSeparators: boolean;
+    pathLevels: 1 | 2 | 3;
+    gitStatus: {
+        enabled: boolean;
+        showDirty: boolean;
+        showAheadBehind: boolean;
+        showFileStats: boolean;
+    };
+    display: {
+        showModel: boolean;
+        showContextBar: boolean;
+        contextValue: ContextValueMode;
+        showConfigCounts: boolean;
+        showDuration: boolean;
+        showSpeed: boolean;
+        showTokenBreakdown: boolean;
+        showUsage: boolean;
+        usageBarEnabled: boolean;
+        showTools: boolean;
+        showAgents: boolean;
+        showTodos: boolean;
+        autocompactBuffer: AutocompactBufferMode;
+        usageThreshold: number;
+        sevenDayThreshold: number;
+        environmentThreshold: number;
+    };
+}
+export declare const DEFAULT_CONFIG: HudConfig;
+export declare function getConfigPath(): string;
+export declare function loadConfig(): Promise<HudConfig>;
+//# sourceMappingURL=config.d.ts.map
