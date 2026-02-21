@@ -1,6 +1,33 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as os from 'node:os';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
+const FETCH_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+function getFetchStampPath() {
+    return path.join(os.homedir(), '.claude', 'plugins', 'claude-statusbar', '.git-fetch-stamp');
+}
+async function periodicFetch(cwd) {
+    const stampPath = getFetchStampPath();
+    const now = Date.now();
+    try {
+        if (fs.existsSync(stampPath)) {
+            const stamp = parseInt(fs.readFileSync(stampPath, 'utf8'), 10);
+            if (now - stamp < FETCH_COOLDOWN_MS)
+                return;
+        }
+    }
+    catch { /* proceed with fetch */ }
+    try {
+        const dir = path.dirname(stampPath);
+        if (!fs.existsSync(dir))
+            fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(stampPath, String(now), 'utf8');
+        await execFileAsync('git', ['fetch', '--quiet'], { cwd, timeout: 5000, encoding: 'utf8' });
+    }
+    catch { /* ignore fetch failures */ }
+}
 export async function getGitBranch(cwd) {
     if (!cwd)
         return null;
@@ -35,6 +62,8 @@ export async function getGitStatus(cwd) {
         catch {
             // Ignore errors, assume clean
         }
+        // Periodic fetch to keep tracking refs up to date (every 5 min)
+        await periodicFetch(cwd);
         // Get ahead/behind counts
         let ahead = 0;
         let behind = 0;
