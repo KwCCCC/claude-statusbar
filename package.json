@@ -1,6 +1,6 @@
 {
   "name": "@kwcccc/claude-statusbar",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Compact statusline for Claude Code — OMC-style ctx/usage, agent tree, profile, skill label",
   "type": "module",
   "main": "dist/index.js",
