@@ -1,6 +1,6 @@
 {
   "name": "claude-statusbar",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "private": true,
   "description": "Compact statusline plugin for Claude Code",
   "type": "module",

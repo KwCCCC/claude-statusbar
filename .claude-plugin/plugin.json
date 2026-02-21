@@ -1,7 +1,7 @@
 {
   "name": "claude-statusbar",
   "description": "Compact statusline HUD for Claude Code — OMC-style ctx/usage, agent tree, profile, skill label",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "author": {
     "name": "KwCCCC",
     "url": "https://github.com/KwCCCC"
