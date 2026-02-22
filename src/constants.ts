@@ -1,4 +1,4 @@
-export const VERSION = '1.0.28';
+export const VERSION = '1.0.30';
 
 /**
  * Autocompact buffer percentage.

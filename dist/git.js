@@ -60,9 +60,10 @@ export async function getGitStatus(cwd, sessionId) {
         try {
             const { stdout: statusOut } = await execFileAsync('git', ['--no-optional-locks', 'status', '--porcelain'], { cwd, timeout: 1000, encoding: 'utf8' });
             const trimmed = statusOut.trim();
-            isDirty = trimmed.length > 0;
-            if (isDirty) {
+            if (trimmed.length > 0) {
                 fileStats = parseFileStats(trimmed);
+                // Only mark dirty for tracked changes (not untracked files)
+                isDirty = fileStats.modified > 0 || fileStats.added > 0 || fileStats.deleted > 0;
             }
         }
         catch {
