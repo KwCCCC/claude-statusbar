@@ -14,6 +14,17 @@ const KEYCHAIN_BACKOFF_MS = 60_000; // Backoff on keychain failures to avoid re-
 function getCachePath(homeDir) {
     return path.join(homeDir, '.claude', 'plugins', 'claude-statusbar', '.usage-cache.json');
 }
+function hydrateDates(data) {
+    // JSON.stringify converts Date to ISO string, so we need to reconvert on read.
+    // new Date() handles both Date objects and ISO strings safely.
+    if (data.fiveHourResetAt) {
+        data.fiveHourResetAt = new Date(data.fiveHourResetAt);
+    }
+    if (data.sevenDayResetAt) {
+        data.sevenDayResetAt = new Date(data.sevenDayResetAt);
+    }
+    return data;
+}
 function readCache(homeDir, now) {
     try {
         const cachePath = getCachePath(homeDir);
@@ -28,16 +39,25 @@ function readCache(homeDir, now) {
         const ttl = cache.data.apiUnavailable ? CACHE_FAILURE_TTL_MS : CACHE_TTL_MS;
         if (now - cache.timestamp >= ttl)
             return null;
-        // JSON.stringify converts Date to ISO string, so we need to reconvert on read.
-        // new Date() handles both Date objects and ISO strings safely.
-        const data = cache.data;
-        if (data.fiveHourResetAt) {
-            data.fiveHourResetAt = new Date(data.fiveHourResetAt);
-        }
-        if (data.sevenDayResetAt) {
-            data.sevenDayResetAt = new Date(data.sevenDayResetAt);
-        }
-        return data;
+        return hydrateDates(cache.data);
+    }
+    catch {
+        return null;
+    }
+}
+/** Read last successful (non-failure) cache data, ignoring TTL. */
+function readLastGoodCache(homeDir) {
+    try {
+        const cachePath = getCachePath(homeDir);
+        if (!fs.existsSync(cachePath))
+            return null;
+        const content = fs.readFileSync(cachePath, 'utf8');
+        const cache = JSON.parse(content);
+        if (cache.version !== VERSION)
+            return null;
+        if (cache.data.apiUnavailable)
+            return null;
+        return hydrateDates(cache.data);
     }
     catch {
         return null;
@@ -95,7 +115,14 @@ export async function getUsage(overrides = {}) {
         // Fetch usage from API
         const apiResult = await deps.fetchApi(accessToken);
         if (!apiResult.data) {
-            // API call failed, cache the failure to prevent retry storms
+            // API failed — prefer last known good data over showing "??"
+            const lastGood = readLastGoodCache(homeDir);
+            if (lastGood) {
+                // Extend the existing good cache TTL so we don't re-fetch too aggressively
+                writeCache(homeDir, lastGood, now);
+                return lastGood;
+            }
+            // No prior good data — show "??" as last resort
             const failureResult = {
                 planName,
                 fiveHour: null,

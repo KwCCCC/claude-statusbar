@@ -70,14 +70,15 @@ export function getBufferedPercent(stdin: StdinData): number {
   }
 
   // Fallback: manual calculation with buffer for older Claude Code versions
+  // Scale so 0 tokens = 0%, autocompact threshold = 80% (triggers COMPRESS? warning)
   const size = stdin.context_window?.context_window_size;
   if (!size || size <= 0) {
     return 0;
   }
 
   const totalTokens = getTotalTokens(stdin);
-  const buffer = size * AUTOCOMPACT_BUFFER_PERCENT;
-  return Math.min(100, Math.round(((totalTokens + buffer) / size) * 100));
+  const effectiveSize = size * (1 - AUTOCOMPACT_BUFFER_PERCENT);
+  return Math.min(100, Math.round((totalTokens / effectiveSize) * 80));
 }
 
 export function getModelName(stdin: StdinData): string {

@@ -15,6 +15,43 @@ function visualLength(str) {
 function makeSeparator(length) {
     return dim('─'.repeat(Math.max(length, 20)));
 }
+function getTerminalWidth() {
+    // stdout is piped to Claude Code, so try stderr (often still connected to TTY)
+    if (process.stderr.columns)
+        return process.stderr.columns;
+    if (process.stdout.columns)
+        return process.stdout.columns;
+    const envCols = parseInt(process.env.COLUMNS || '', 10);
+    if (envCols > 0)
+        return envCols;
+    return 120;
+}
+/** Split a long line at ' | ' separators to fit within maxWidth. */
+function wrapLine(line, maxWidth) {
+    if (visualLength(line) <= maxWidth)
+        return [line];
+    // Split at pipe separators (handles both plain ' | ' and ANSI-dimmed variants)
+    // eslint-disable-next-line no-control-regex
+    const parts = line.split(/ (?:\x1b\[[0-9;]*m)*\|(?:\x1b\[[0-9;]*m)* /);
+    if (parts.length <= 1)
+        return [line];
+    const sep = ' | ';
+    const indent = '  ';
+    const result = [];
+    let current = parts[0];
+    for (let i = 1; i < parts.length; i++) {
+        const candidate = current + sep + parts[i];
+        if (visualLength(candidate) <= maxWidth) {
+            current = candidate;
+        }
+        else {
+            result.push(current);
+            current = indent + parts[i];
+        }
+    }
+    result.push(current);
+    return result;
+}
 function collectActivityLines(ctx) {
     const activityLines = [];
     const display = ctx.config?.display;
@@ -78,9 +115,12 @@ export function render(ctx) {
         lines.push(makeSeparator(maxWidth));
     }
     lines.push(...activityLines);
+    const maxWidth = getTerminalWidth();
     for (const line of lines) {
-        const outputLine = `${RESET}${line.replace(/ /g, '\u00A0')}`;
-        console.log(outputLine);
+        for (const wrapped of wrapLine(line, maxWidth)) {
+            const outputLine = `${RESET}${wrapped.replace(/ /g, '\u00A0')}`;
+            console.log(outputLine);
+        }
     }
 }
 //# sourceMappingURL=index.js.map
