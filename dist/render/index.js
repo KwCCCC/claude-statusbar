@@ -1,3 +1,5 @@
+import { execFileSync } from 'node:child_process';
+import { openSync, closeSync } from 'node:fs';
 import { renderSessionLine } from './session-line.js';
 import { renderToolsLine } from './tools-line.js';
 import { renderAgentsLine } from './agents-line.js';
@@ -16,7 +18,26 @@ function makeSeparator(length) {
     return dim('─'.repeat(Math.max(length, 20)));
 }
 function getTerminalWidth() {
-    // stdout is piped to Claude Code, so try stderr (often still connected to TTY)
+    // Try /dev/tty for actual terminal dimensions (works even when stdout/stderr are piped)
+    try {
+        const fd = openSync('/dev/tty', 'r');
+        try {
+            const output = execFileSync('/bin/stty', ['size'], {
+                stdio: [fd, 'pipe', 'pipe'],
+                encoding: 'utf8',
+                timeout: 500,
+            }).trim();
+            const cols = parseInt(output.split(' ')[1], 10);
+            if (cols > 0)
+                return cols;
+        }
+        finally {
+            closeSync(fd);
+        }
+    }
+    catch {
+        // /dev/tty unavailable
+    }
     if (process.stderr.columns)
         return process.stderr.columns;
     if (process.stdout.columns)

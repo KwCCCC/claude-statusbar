@@ -54,6 +54,10 @@ function getCachePath(homeDir: string): string {
   return path.join(homeDir, '.claude', 'plugins', 'claude-statusbar', '.usage-cache.json');
 }
 
+function getLastGoodPath(homeDir: string): string {
+  return path.join(homeDir, '.claude', 'plugins', 'claude-statusbar', '.usage-last-good.json');
+}
+
 function hydrateDates(data: UsageData): UsageData {
   // JSON.stringify converts Date to ISO string, so we need to reconvert on read.
   // new Date() handles both Date objects and ISO strings safely.
@@ -87,21 +91,36 @@ function readCache(homeDir: string, now: number): UsageData | null {
   }
 }
 
-/** Read last successful (non-failure) cache data, ignoring TTL. */
+/** Read last successful data from separate file (survives version updates and failures). */
 function readLastGoodCache(homeDir: string): UsageData | null {
   try {
-    const cachePath = getCachePath(homeDir);
-    if (!fs.existsSync(cachePath)) return null;
+    const lastGoodPath = getLastGoodPath(homeDir);
+    if (!fs.existsSync(lastGoodPath)) return null;
 
-    const content = fs.readFileSync(cachePath, 'utf8');
+    const content = fs.readFileSync(lastGoodPath, 'utf8');
     const cache: CacheFile = JSON.parse(content);
 
-    if (cache.version !== VERSION) return null;
+    // Don't check version — last good data is still useful across upgrades
     if (cache.data.apiUnavailable) return null;
 
     return hydrateDates(cache.data);
   } catch {
     return null;
+  }
+}
+
+/** Write last successful data to separate file. */
+function writeLastGoodCache(homeDir: string, data: UsageData, timestamp: number): void {
+  try {
+    const lastGoodPath = getLastGoodPath(homeDir);
+    const dir = path.dirname(lastGoodPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const cache: CacheFile = { data, timestamp, version: VERSION };
+    fs.writeFileSync(lastGoodPath, JSON.stringify(cache), 'utf8');
+  } catch {
+    // Ignore write failures
   }
 }
 
@@ -210,8 +229,9 @@ export async function getUsage(overrides: Partial<UsageApiDeps> = {}): Promise<U
       sevenDayResetAt,
     };
 
-    // Write to file cache
+    // Write to file cache + persist as last known good
     writeCache(homeDir, result, now);
+    writeLastGoodCache(homeDir, result, now);
 
     return result;
   } catch (error) {
