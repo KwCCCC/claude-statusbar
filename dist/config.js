@@ -5,6 +5,7 @@ export const DEFAULT_CONFIG = {
     lineLayout: 'expanded',
     showSeparators: false,
     pathLevels: 1,
+    wrapMode: 'wrap',
     gitStatus: {
         enabled: true,
         showDirty: true,
@@ -135,7 +136,14 @@ function mergeConfig(userConfig) {
         sevenDayThreshold: validateThreshold(migrated.display?.sevenDayThreshold, 100),
         environmentThreshold: validateThreshold(migrated.display?.environmentThreshold, 100),
     };
-    return { lineLayout, showSeparators, pathLevels, gitStatus, display };
+    const maxWidth = typeof migrated.maxWidth === 'number'
+        ? migrated.maxWidth
+        : DEFAULT_CONFIG.maxWidth;
+    const wrapModeVal = migrated.wrapMode;
+    const wrapMode = wrapModeVal === 'truncate' || wrapModeVal === 'wrap'
+        ? wrapModeVal
+        : DEFAULT_CONFIG.wrapMode;
+    return { lineLayout, showSeparators, pathLevels, maxWidth, wrapMode, gitStatus, display };
 }
 export async function loadConfig() {
     const configPath = getConfigPath();

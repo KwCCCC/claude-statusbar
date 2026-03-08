@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 
 export type LineLayoutType = 'compact' | 'expanded';
+export type WrapMode = 'truncate' | 'wrap';
 
 export type AutocompactBufferMode = 'enabled' | 'disabled';
 export type ContextValueMode = 'percent' | 'tokens';
@@ -11,6 +12,8 @@ export interface HudConfig {
   lineLayout: LineLayoutType;
   showSeparators: boolean;
   pathLevels: 1 | 2 | 3;
+  maxWidth?: number;
+  wrapMode: WrapMode;
   gitStatus: {
     enabled: boolean;
     showDirty: boolean;
@@ -41,6 +44,7 @@ export const DEFAULT_CONFIG: HudConfig = {
   lineLayout: 'expanded',
   showSeparators: false,
   pathLevels: 1,
+  wrapMode: 'wrap',
   gitStatus: {
     enabled: true,
     showDirty: true,
@@ -189,7 +193,16 @@ function mergeConfig(userConfig: Partial<HudConfig>): HudConfig {
     environmentThreshold: validateThreshold(migrated.display?.environmentThreshold, 100),
   };
 
-  return { lineLayout, showSeparators, pathLevels, gitStatus, display };
+  const maxWidth = typeof (migrated as Record<string, unknown>).maxWidth === 'number'
+    ? (migrated as Record<string, unknown>).maxWidth as number
+    : DEFAULT_CONFIG.maxWidth;
+
+  const wrapModeVal = (migrated as Record<string, unknown>).wrapMode;
+  const wrapMode: WrapMode = wrapModeVal === 'truncate' || wrapModeVal === 'wrap'
+    ? wrapModeVal
+    : DEFAULT_CONFIG.wrapMode;
+
+  return { lineLayout, showSeparators, pathLevels, maxWidth, wrapMode, gitStatus, display };
 }
 
 export async function loadConfig(): Promise<HudConfig> {

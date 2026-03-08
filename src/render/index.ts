@@ -1,5 +1,3 @@
-import { execFileSync } from 'node:child_process';
-import { openSync, closeSync } from 'node:fs';
 import type { RenderContext } from '../types.js';
 import { renderSessionLine } from './session-line.js';
 import { renderToolsLine } from './tools-line.js';
@@ -9,9 +7,11 @@ import { renderProjectLine, renderEnvironmentLine } from './lines/index.js';
 import { renderStatusLine } from './lines/status.js';
 import { dim, RESET } from './colors.js';
 
+// eslint-disable-next-line no-control-regex
+const ANSI_REGEX = /\x1b\[[0-9;]*[a-zA-Z]/g;
+
 function stripAnsi(str: string): string {
-  // eslint-disable-next-line no-control-regex
-  return str.replace(/\x1b\[[0-9;]*m/g, '');
+  return str.replace(ANSI_REGEX, '');
 }
 
 function visualLength(str: string): number {
@@ -22,57 +22,114 @@ function makeSeparator(length: number): string {
   return dim('─'.repeat(Math.max(length, 20)));
 }
 
-function getTerminalWidth(): number {
-  // Try /dev/tty for actual terminal dimensions (works even when stdout/stderr are piped)
-  try {
-    const fd = openSync('/dev/tty', 'r');
-    try {
-      const output = execFileSync('/bin/stty', ['size'], {
-        stdio: [fd, 'pipe', 'pipe'],
-        encoding: 'utf8',
-        timeout: 500,
-      }).trim();
-      const cols = parseInt(output.split(' ')[1], 10);
-      if (cols > 0) return cols;
-    } finally {
-      closeSync(fd);
+const PLAIN_SEPARATOR = ' | ';
+const DIM_SEPARATOR = dim(PLAIN_SEPARATOR);
+
+/**
+ * Truncate a single line to maxWidth, preserving ANSI codes.
+ */
+function truncateLineToMaxWidth(line: string, maxWidth: number): string {
+  if (maxWidth <= 0) return '';
+  if (visualLength(line) <= maxWidth) return line;
+
+  const ELLIPSIS = '...';
+  const targetWidth = Math.max(0, maxWidth - 3);
+
+  let visibleWidth = 0;
+  let result = '';
+  let i = 0;
+
+  // eslint-disable-next-line no-control-regex
+  const ansiPattern = /\x1b\[[0-9;]*[a-zA-Z]/;
+
+  while (i < line.length) {
+    const remaining = line.slice(i);
+    const ansiMatch = remaining.match(ansiPattern);
+
+    if (ansiMatch && ansiMatch.index === 0) {
+      result += ansiMatch[0];
+      i += ansiMatch[0].length;
+      continue;
     }
-  } catch {
-    // /dev/tty unavailable
+
+    if (visibleWidth >= targetWidth) break;
+
+    result += line[i];
+    visibleWidth++;
+    i++;
   }
-  if (process.stderr.columns) return process.stderr.columns;
-  if (process.stdout.columns) return process.stdout.columns;
-  const envCols = parseInt(process.env.COLUMNS || '', 10);
-  if (envCols > 0) return envCols;
-  return 120;
+
+  return result + RESET + ELLIPSIS;
 }
 
-/** Split a long line at ' | ' separators to fit within maxWidth. */
-function wrapLine(line: string, maxWidth: number): string[] {
+/**
+ * Wrap a single line at separator boundaries to fit within maxWidth.
+ * Falls back to truncation when no separator found or single segment exceeds maxWidth.
+ */
+function wrapLineToMaxWidth(line: string, maxWidth: number): string[] {
+  if (maxWidth <= 0) return [''];
   if (visualLength(line) <= maxWidth) return [line];
 
-  // Split at pipe separators (handles both plain ' | ' and ANSI-dimmed variants)
-  // eslint-disable-next-line no-control-regex
-  const parts = line.split(/ (?:\x1b\[[0-9;]*m)*\|(?:\x1b\[[0-9;]*m)* /);
-  if (parts.length <= 1) return [line];
+  const separator = line.includes(DIM_SEPARATOR)
+    ? DIM_SEPARATOR
+    : line.includes(PLAIN_SEPARATOR)
+      ? PLAIN_SEPARATOR
+      : null;
 
-  const sep = ' | ';
-  const indent = '  ';
-  const result: string[] = [];
-  let current = parts[0];
+  if (!separator) {
+    return [truncateLineToMaxWidth(line, maxWidth)];
+  }
 
-  for (let i = 1; i < parts.length; i++) {
-    const candidate = current + sep + parts[i];
+  const segments = line.split(separator);
+  if (segments.length <= 1) {
+    return [truncateLineToMaxWidth(line, maxWidth)];
+  }
+
+  const wrapped: string[] = [];
+  let current = segments[0] ?? '';
+
+  for (let i = 1; i < segments.length; i++) {
+    const nextSegment = segments[i] ?? '';
+    const candidate = `${current}${separator}${nextSegment}`;
+
     if (visualLength(candidate) <= maxWidth) {
       current = candidate;
-    } else {
-      result.push(current);
-      current = indent + parts[i];
+      continue;
     }
-  }
-  result.push(current);
 
-  return result;
+    if (visualLength(current) > maxWidth) {
+      wrapped.push(truncateLineToMaxWidth(current, maxWidth));
+    } else {
+      wrapped.push(current);
+    }
+
+    current = nextSegment;
+  }
+
+  if (visualLength(current) > maxWidth) {
+    wrapped.push(truncateLineToMaxWidth(current, maxWidth));
+  } else {
+    wrapped.push(current);
+  }
+
+  return wrapped;
+}
+
+/**
+ * Apply maxWidth behavior by mode.
+ */
+function applyMaxWidth(
+  lines: string[],
+  maxWidth: number | undefined,
+  wrapMode: 'truncate' | 'wrap',
+): string[] {
+  if (!maxWidth || maxWidth <= 0) return lines;
+
+  if (wrapMode === 'wrap') {
+    return lines.flatMap(line => wrapLineToMaxWidth(line, maxWidth));
+  }
+
+  return lines.map(line => truncateLineToMaxWidth(line, maxWidth));
 }
 
 function collectActivityLines(ctx: RenderContext): string[] {
@@ -148,17 +205,16 @@ export function render(ctx: RenderContext): void {
   const lines: string[] = [...headerLines];
 
   if (showSeparators && activityLines.length > 0) {
-    const maxWidth = Math.max(...headerLines.map(visualLength), 20);
-    lines.push(makeSeparator(maxWidth));
+    const maxW = Math.max(...headerLines.map(visualLength), 20);
+    lines.push(makeSeparator(maxW));
   }
 
   lines.push(...activityLines);
 
-  const maxWidth = getTerminalWidth();
-  for (const line of lines) {
-    for (const wrapped of wrapLine(line, maxWidth)) {
-      const outputLine = `${RESET}${wrapped.replace(/ /g, '\u00A0')}`;
-      console.log(outputLine);
-    }
+  const finalLines = applyMaxWidth(lines, ctx.config?.maxWidth, ctx.config?.wrapMode ?? 'wrap');
+
+  for (const line of finalLines) {
+    const outputLine = `${RESET}${line.replace(/ /g, '\u00A0')}`;
+    console.log(outputLine);
   }
 }

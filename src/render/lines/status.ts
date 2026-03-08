@@ -58,7 +58,8 @@ function renderCompactContext(percent: number): string {
 
 function renderCompactUsage(data: UsageData): string | null {
   if (data.apiUnavailable) {
-    return yellow('usage:??');
+    // Hide usage section when API unavailable (no data to show)
+    return null;
   }
 
   if (isLimitReached(data)) {

@@ -1,6 +1,6 @@
 import { isLimitReached } from '../../types.js';
 import { getContextPercent, getBufferedPercent, getProviderLabel } from '../../stdin.js';
-import { dim, red, yellow, getContextColor, getSessionColor, RESET } from '../colors.js';
+import { dim, red, getContextColor, getSessionColor, RESET } from '../colors.js';
 import { renderGitPart } from './project.js';
 const SEP = dim('|');
 /**
@@ -48,7 +48,8 @@ function renderCompactContext(percent) {
 }
 function renderCompactUsage(data) {
     if (data.apiUnavailable) {
-        return yellow('usage:??');
+        // Hide usage section when API unavailable (no data to show)
+        return null;
     }
     if (isLimitReached(data)) {
         const resetTime = data.fiveHour === 100

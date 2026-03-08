@@ -1,10 +1,13 @@
 export type LineLayoutType = 'compact' | 'expanded';
+export type WrapMode = 'truncate' | 'wrap';
 export type AutocompactBufferMode = 'enabled' | 'disabled';
 export type ContextValueMode = 'percent' | 'tokens';
 export interface HudConfig {
     lineLayout: LineLayoutType;
     showSeparators: boolean;
     pathLevels: 1 | 2 | 3;
+    maxWidth?: number;
+    wrapMode: WrapMode;
     gitStatus: {
         enabled: boolean;
         showDirty: boolean;
