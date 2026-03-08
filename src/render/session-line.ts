@@ -127,7 +127,7 @@ export function renderSessionLine(ctx: RenderContext): string {
   // Usage limits display (shown when enabled in config, respects usageThreshold)
   if (display?.showUsage !== false && ctx.usageData?.planName && !providerLabel) {
     if (ctx.usageData.apiUnavailable) {
-      // Hide usage section when API unavailable (no data to show)
+      parts.push(yellow('usage:??'));
     } else if (isLimitReached(ctx.usageData)) {
       const resetTime = ctx.usageData.fiveHour === 100
         ? formatResetTime(ctx.usageData.fiveHourResetAt)
