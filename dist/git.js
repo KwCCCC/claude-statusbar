@@ -34,6 +34,29 @@ async function periodicFetch(cwd, sessionId) {
     }
     catch { /* ignore fetch failures */ }
 }
+function repoNameFromCommonDir(commonDir) {
+    const base = path.basename(commonDir);
+    if (base === '.git')
+        return path.basename(path.dirname(commonDir));
+    // Bare repository: the directory itself is the repo (repo.git)
+    return base.endsWith('.git') ? base.slice(0, -4) : base;
+}
+/**
+ * Resolve worktree identity from rev-parse output.
+ *
+ * The main worktree resolves --git-dir and --git-common-dir to the same path;
+ * a linked worktree points --git-dir at .git/worktrees/<name> instead.
+ * Submodules keep the two equal, so they are not mistaken for worktrees.
+ */
+function parseWorktreeInfo(cwd, gitDirRaw, commonDirRaw) {
+    if (!gitDirRaw || !commonDirRaw)
+        return null;
+    const gitDir = path.resolve(cwd, gitDirRaw.trim());
+    const commonDir = path.resolve(cwd, commonDirRaw.trim());
+    if (gitDir === commonDir)
+        return null;
+    return { name: path.basename(gitDir), repoName: repoNameFromCommonDir(commonDir) };
+}
 export async function getGitBranch(cwd) {
     if (!cwd)
         return null;
@@ -49,11 +72,13 @@ export async function getGitStatus(cwd, sessionId) {
     if (!cwd)
         return null;
     try {
-        // Get branch name
-        const { stdout: branchOut } = await execFileAsync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd, timeout: 1000, encoding: 'utf8' });
-        const branch = branchOut.trim();
+        // Branch and worktree paths come from one rev-parse to avoid a second process
+        const { stdout: revParseOut } = await execFileAsync('git', ['rev-parse', '--abbrev-ref', 'HEAD', '--git-dir', '--git-common-dir'], { cwd, timeout: 1000, encoding: 'utf8' });
+        const [branchRaw, gitDirRaw, commonDirRaw] = revParseOut.trim().split('\n');
+        const branch = (branchRaw ?? '').trim();
         if (!branch)
             return null;
+        const worktree = parseWorktreeInfo(cwd, gitDirRaw, commonDirRaw);
         // Check for dirty state and parse file stats
         let isDirty = false;
         let fileStats;
@@ -96,7 +121,7 @@ export async function getGitStatus(cwd, sessionId) {
         catch {
             // Ignore errors (e.g. no commits yet)
         }
-        return { branch, isDirty, ahead, behind, fileStats, lineDiff };
+        return { branch, isDirty, ahead, behind, fileStats, lineDiff, worktree: worktree ?? undefined };
     }
     catch {
         return null;

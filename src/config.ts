@@ -19,6 +19,7 @@ export interface HudConfig {
     showDirty: boolean;
     showAheadBehind: boolean;
     showFileStats: boolean;
+    showWorktree: boolean;
   };
   display: {
     showModel: boolean;
@@ -50,6 +51,7 @@ export const DEFAULT_CONFIG: HudConfig = {
     showDirty: true,
     showAheadBehind: true,
     showFileStats: false,
+    showWorktree: true,
   },
   display: {
     showModel: true,
@@ -146,6 +148,9 @@ function mergeConfig(userConfig: Partial<HudConfig>): HudConfig {
     showFileStats: typeof migrated.gitStatus?.showFileStats === 'boolean'
       ? migrated.gitStatus.showFileStats
       : DEFAULT_CONFIG.gitStatus.showFileStats,
+    showWorktree: typeof migrated.gitStatus?.showWorktree === 'boolean'
+      ? migrated.gitStatus.showWorktree
+      : DEFAULT_CONFIG.gitStatus.showWorktree,
   };
 
   const display = {

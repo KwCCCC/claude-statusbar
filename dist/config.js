@@ -11,6 +11,7 @@ export const DEFAULT_CONFIG = {
         showDirty: true,
         showAheadBehind: true,
         showFileStats: false,
+        showWorktree: true,
     },
     display: {
         showModel: true,
@@ -91,6 +92,9 @@ function mergeConfig(userConfig) {
         showFileStats: typeof migrated.gitStatus?.showFileStats === 'boolean'
             ? migrated.gitStatus.showFileStats
             : DEFAULT_CONFIG.gitStatus.showFileStats,
+        showWorktree: typeof migrated.gitStatus?.showWorktree === 'boolean'
+            ? migrated.gitStatus.showWorktree
+            : DEFAULT_CONFIG.gitStatus.showWorktree,
     };
     const display = {
         showModel: typeof migrated.display?.showModel === 'boolean'

@@ -3,7 +3,7 @@
 Compact statusline plugin for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Inspired by [OMC HUD](https://github.com/nicobailey/claude-code-hud).
 
 ```
-repo:(genlab-tools) git:(main) ↑2 ↓1 | ctx:25% | 5h:41%(3h14m) wk:11%(5d17h) @my-session
+repo:(genlab-tools) wt:(feat-login) git:(feat/login) ↑2 ↓1 | ctx:25% | 5h:41%(3h14m) wk:11%(5d17h) @my-session
 develop@email.com | Opus 4.6 (Max) v2.1.50 | 1 CLAUDE.md | +15 -3 | skill:write-spec
 agents:3
 ├─ A architect       2m  analyzing architecture patterns...
@@ -15,6 +15,7 @@ agents:3
 
 **Line 1 — Repo & Usage**
 - `repo:(path)` project path (yellow) + `git:(branch)` (cyan) with `↑↓` ahead/behind
+- `wt:(name)` (magenta) when the session runs in a linked worktree; `repo:` then names the owning repository instead of the worktree directory
 - `ctx:XX%` — context window usage with color thresholds (green < 70%, yellow 70-84%, red >= 85%)
 - `5h:XX%(reset) wk:XX%(reset)` — 5-hour and 7-day rate limit usage with reset countdown
 - `COMPRESS?` warning at 80%+, `CRITICAL` at 85%+
@@ -65,7 +66,8 @@ Optional. Create `~/.claude/plugins/claude-statusbar/config.json` to customize:
     "enabled": true,
     "showDirty": true,
     "showAheadBehind": true,
-    "showFileStats": false
+    "showFileStats": false,
+    "showWorktree": true
   },
   "display": {
     "showModel": true,
@@ -105,6 +107,7 @@ All fields are optional. Unset fields use defaults.
 | `showDirty` | `true` | `*` indicator for uncommitted changes |
 | `showAheadBehind` | `true` | `↑N ↓N` ahead/behind remote |
 | `showFileStats` | `false` | File-level change counts |
+| `showWorktree` | `true` | `wt:(name)` in a linked worktree, with `repo:` showing the owning repository. No effect in the main worktree |
 
 ### Other options
 

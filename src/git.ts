@@ -54,6 +54,13 @@ export interface LineDiffStats {
   deletions: number;
 }
 
+export interface WorktreeInfo {
+  /** Linked worktree directory name */
+  name: string;
+  /** Name of the repository root that owns this worktree */
+  repoName: string;
+}
+
 export interface GitStatus {
   branch: string;
   isDirty: boolean;
@@ -61,6 +68,36 @@ export interface GitStatus {
   behind: number;
   fileStats?: FileStats;
   lineDiff?: LineDiffStats;
+  /** Set only when cwd is a linked worktree, not the main one */
+  worktree?: WorktreeInfo;
+}
+
+function repoNameFromCommonDir(commonDir: string): string {
+  const base = path.basename(commonDir);
+  if (base === '.git') return path.basename(path.dirname(commonDir));
+  // Bare repository: the directory itself is the repo (repo.git)
+  return base.endsWith('.git') ? base.slice(0, -4) : base;
+}
+
+/**
+ * Resolve worktree identity from rev-parse output.
+ *
+ * The main worktree resolves --git-dir and --git-common-dir to the same path;
+ * a linked worktree points --git-dir at .git/worktrees/<name> instead.
+ * Submodules keep the two equal, so they are not mistaken for worktrees.
+ */
+function parseWorktreeInfo(
+  cwd: string,
+  gitDirRaw?: string,
+  commonDirRaw?: string
+): WorktreeInfo | null {
+  if (!gitDirRaw || !commonDirRaw) return null;
+
+  const gitDir = path.resolve(cwd, gitDirRaw.trim());
+  const commonDir = path.resolve(cwd, commonDirRaw.trim());
+  if (gitDir === commonDir) return null;
+
+  return { name: path.basename(gitDir), repoName: repoNameFromCommonDir(commonDir) };
 }
 
 export async function getGitBranch(cwd?: string): Promise<string | null> {
@@ -82,14 +119,17 @@ export async function getGitStatus(cwd?: string, sessionId?: string): Promise<Gi
   if (!cwd) return null;
 
   try {
-    // Get branch name
-    const { stdout: branchOut } = await execFileAsync(
+    // Branch and worktree paths come from one rev-parse to avoid a second process
+    const { stdout: revParseOut } = await execFileAsync(
       'git',
-      ['rev-parse', '--abbrev-ref', 'HEAD'],
+      ['rev-parse', '--abbrev-ref', 'HEAD', '--git-dir', '--git-common-dir'],
       { cwd, timeout: 1000, encoding: 'utf8' }
     );
-    const branch = branchOut.trim();
+    const [branchRaw, gitDirRaw, commonDirRaw] = revParseOut.trim().split('\n');
+    const branch = (branchRaw ?? '').trim();
     if (!branch) return null;
+
+    const worktree = parseWorktreeInfo(cwd, gitDirRaw, commonDirRaw);
 
     // Check for dirty state and parse file stats
     let isDirty = false;
@@ -146,7 +186,7 @@ export async function getGitStatus(cwd?: string, sessionId?: string): Promise<Gi
       // Ignore errors (e.g. no commits yet)
     }
 
-    return { branch, isDirty, ahead, behind, fileStats, lineDiff };
+    return { branch, isDirty, ahead, behind, fileStats, lineDiff, worktree: worktree ?? undefined };
   } catch {
     return null;
   }

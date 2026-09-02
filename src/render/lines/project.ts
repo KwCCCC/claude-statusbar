@@ -1,6 +1,6 @@
 import type { RenderContext } from '../../types.js';
 import { getModelName, getProviderLabel } from '../../stdin.js';
-import { branchColor, cyan, dim, green, red, yellow } from '../colors.js';
+import { branchColor, cyan, dim, green, magenta, red, yellow } from '../colors.js';
 
 export function renderProjectLine(ctx: RenderContext): string | null {
   const display = ctx.config?.display;
@@ -31,13 +31,24 @@ export function renderProjectLine(ctx: RenderContext): string | null {
 export function renderGitPart(ctx: RenderContext): string | null {
   if (!ctx.stdin.cwd) return null;
 
-  const segments = ctx.stdin.cwd.split(/[/\\]/).filter(Boolean);
-  const pathLevels = ctx.config?.pathLevels ?? 1;
-  const projectPath = segments.length > 0 ? segments.slice(-pathLevels).join('/') : '/';
-
   let gitPart = '';
   const gitConfig = ctx.config?.gitStatus;
   const showGit = gitConfig?.enabled ?? true;
+
+  const worktree = showGit && (gitConfig?.showWorktree ?? true)
+    ? ctx.gitStatus?.worktree
+    : undefined;
+
+  // A worktree path ends in the worktree's own directory, which hides the repo
+  // it belongs to; name the repo instead and show the worktree separately.
+  let projectPath: string;
+  if (worktree) {
+    projectPath = worktree.repoName;
+  } else {
+    const segments = ctx.stdin.cwd.split(/[/\\]/).filter(Boolean);
+    const pathLevels = ctx.config?.pathLevels ?? 1;
+    projectPath = segments.length > 0 ? segments.slice(-pathLevels).join('/') : '/';
+  }
 
   if (showGit && ctx.gitStatus) {
     const branchParts: string[] = [ctx.gitStatus.branch];
@@ -66,5 +77,7 @@ export function renderGitPart(ctx: RenderContext): string | null {
     }
   }
 
-  return `repo:(${yellow(projectPath)})${gitPart}`;
+  const worktreePart = worktree ? ` wt:(${magenta(worktree.name)})` : '';
+
+  return `repo:(${yellow(projectPath)})${worktreePart}${gitPart}`;
 }
