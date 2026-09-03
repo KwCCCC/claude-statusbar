@@ -8,6 +8,7 @@ const MID_GREEN = '\x1b[38;5;34m';
 const MID_YELLOW = '\x1b[38;5;179m';
 const MID_RED = '\x1b[38;5;167m';
 const BRANCH_COLOR = '\x1b[38;5;159m';
+const WORKTREE_COLOR = '\x1b[38;5;141m';
 const BRIGHT_BLUE = '\x1b[94m';
 const BRIGHT_MAGENTA = '\x1b[95m';
 export function brightBlue(text) {
@@ -27,6 +28,9 @@ export function cyan(text) {
 }
 export function branchColor(text) {
     return `${BRANCH_COLOR}${text}${RESET}`;
+}
+export function worktreeColor(text) {
+    return `${WORKTREE_COLOR}${text}${RESET}`;
 }
 export function magenta(text) {
     return `${MAGENTA}${text}${RESET}`;

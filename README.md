@@ -15,7 +15,7 @@ agents:3
 
 **Line 1 — Repo & Usage**
 - `repo:(path)` project path (yellow) + `git:(branch)` (cyan) with `↑↓` ahead/behind
-- `wt:(name)` (magenta) when the session runs in a linked worktree; `repo:` then names the owning repository instead of the worktree directory
+- `wt:(name)` (violet) when the session runs in a linked worktree; `repo:` then names the owning repository instead of the worktree directory
 - `ctx:XX%` — context window usage with color thresholds (green < 70%, yellow 70-84%, red >= 85%)
 - `5h:XX%(reset) wk:XX%(reset)` — 5-hour and 7-day rate limit usage with reset countdown
 - `COMPRESS?` warning at 80%+, `CRITICAL` at 85%+

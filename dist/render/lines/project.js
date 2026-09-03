@@ -1,5 +1,5 @@
 import { getModelName, getProviderLabel } from '../../stdin.js';
-import { branchColor, cyan, dim, green, magenta, red, yellow } from '../colors.js';
+import { branchColor, cyan, dim, green, red, worktreeColor, yellow } from '../colors.js';
 export function renderProjectLine(ctx) {
     const display = ctx.config?.display;
     if (display?.showModel === false)
@@ -73,7 +73,7 @@ export function renderGitPart(ctx) {
                 gitPart += ` ${statParts.join(' ')}`;
         }
     }
-    const worktreePart = worktree ? ` wt:(${magenta(worktree.name)})` : '';
+    const worktreePart = worktree ? ` wt:(${worktreeColor(worktree.name)})` : '';
     return `repo:(${yellow(projectPath)})${worktreePart}${gitPart}`;
 }
 //# sourceMappingURL=project.js.map

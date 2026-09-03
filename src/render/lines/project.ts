@@ -1,6 +1,6 @@
 import type { RenderContext } from '../../types.js';
 import { getModelName, getProviderLabel } from '../../stdin.js';
-import { branchColor, cyan, dim, green, magenta, red, yellow } from '../colors.js';
+import { branchColor, cyan, dim, green, red, worktreeColor, yellow } from '../colors.js';
 
 export function renderProjectLine(ctx: RenderContext): string | null {
   const display = ctx.config?.display;
@@ -77,7 +77,7 @@ export function renderGitPart(ctx: RenderContext): string | null {
     }
   }
 
-  const worktreePart = worktree ? ` wt:(${magenta(worktree.name)})` : '';
+  const worktreePart = worktree ? ` wt:(${worktreeColor(worktree.name)})` : '';
 
   return `repo:(${yellow(projectPath)})${worktreePart}${gitPart}`;
 }
